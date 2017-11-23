@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html>
+<div style="width:300px">
+<body>
+<title>Christmas Lights</title>
+<head>Welcome to DKW's christmas light controller!</head><br><br>
+
+<fieldset>
+  <legend>Basic Global Controls:</legend>
+  <center>
+  <form action="/cgi-bin/runLights.sh"><input type="submit" value="Run"></form>
+  <form action="/cgi-bin/pauseLights.sh"><input type="submit" value="Pause"></form>
+  <form action="/cgi-bin/stopLights.sh"><input type="submit" value="Stop"></form>
+  </center>
+</fieldset>
+
+<br>
+
+<form action="/cgi-bin/runLights.sh">
+  <fieldset>
+  <legend>Manual Pattern Control:</legend>
+  <input type="radio" name="pattern" value="" checked> Full Sequence <br>
+  <input type="radio" name="pattern" value="0" > 2-Step Wheel <br>
+  <input type="radio" name="pattern" value="1" > 4-Step Wheel <br>
+  <input type="radio" name="pattern" value="2" > Popcorn! <br>
+  <br>
+  <center>
+  <input type="submit" value="Run">
+  </center>
+  </fieldset>
+</form>
+
+<br>
+
+<form action="/cgi-bin/runLights.sh">
+  <fieldset>
+    <legend>Manual Colour and Pattern Control:</legend>
+    Sequence Select:
+    <select name="pattern">
+      <option value="">Full Sequence</option>
+      <option value="0">2-Head Wheel</option>
+      <option value="1">4-Spoke Wheel</option>
+      <option value="2">Popcorn!</option>
+    </select>
+    <br>
+    Locked Colour:<input type="color" name="lightColour" value="#000000"><br>
+    <br>
+    <center>
+    <input type="submit" value="Test Me!!">
+    </center>
+  </fieldset>
+</form>
+
+</body>
+</div>
+</html>
+

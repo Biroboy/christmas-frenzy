@@ -1,0 +1,135 @@
+#include "WS2812B.h"
+#include <wiringPi.h>
+#include <cstdlib>
+#include <cstring>
+// #include <cstdio>
+#include <iostream>
+#include <unistd.h>
+
+const float fillLevel = 0.10;
+bool cycle = true;
+bool forceColour = false;
+hsv_dbl_t targetHSV = {0,0,0};
+const int nSteps = 200;
+
+void mode2_step(ws2812B_SPI *dispPtr, int count);
+void mode1_step(ws2812B_SPI *dispPtr, int count);
+void mode0_step(ws2812B_SPI *dispPtr, int count);
+
+int main(int argC, char *argV[])
+{
+  int currentMode = 0;
+	
+  while ((opt = getopt(argc, argv, "sSm::c::")) != -1) {
+    switch (opt) {
+      case 'S':
+      case 's':
+        currentMode = -1;
+      case 'm':
+        if(optarg != NULL){
+          cycle = false;
+          currentMode = strtol(optarg, NULL, 0);
+        }
+        break;
+      case 'c':
+        if(optarg != NULL){
+          colourArg = strtol(optarg, NULL, 0);
+          if(colourArg != 0)
+          {
+            forceColour = true;
+            unsigned char r = (colourArg>>0 ) % 256;
+            unsigned char g = (colourArg>>8 ) % 256;
+            unsigned char b = (colourArg>>16) % 256;
+            rgb_dbl_t targetRGB;
+            targetRGB.r = r/255.0;
+            targetRGB.g = g/255.0;
+            targetRGB.b = b/255.0;
+            hsv_dbl_t targetHSL = rgb2hsv(targetRGB);
+          }
+        }
+        break;
+      default: // '?'
+        fprintf(stderr, "Usage: %s [-pPattern] [-cColour] \n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+  }
+	
+  ws2812B_SPI mySpiDisplay;
+  mySpiDisplay.clearDisplay();
+  if(currentMode == -1)
+  {
+	  return 0;
+  }
+  unsigned int cnt = 0;
+  while(true){
+	  cnt++;
+	  if(cycle && (cnt >= nSteps))
+	  {
+		  currentMode++;
+		  cnt = 0;
+	  }
+	  switch(currentMode)
+	  {
+	  case 0:
+		  mode0_step(&mySpiDisplay, cnt);
+		  break;
+	  case 1:
+		  mode1_step(&mySpiDisplay, cnt);
+		  break;
+	  case 2:
+		  mode2_step(&mySpiDisplay, cnt);
+		  break;
+	  case 3:
+	  default:
+		  currentMode = 0;
+	  }
+	delay(25);
+  }
+  return 0;
+}
+
+void mode0_step(ws2812B_SPI *dispPtr, int count)
+{
+	hsv_dbl_t hue;
+	hue.s = 1;
+	hue.v = 1;
+	hue.h = (count*2)%360;
+	// std::cout << hue.h << std::endl;
+	dispPtr->fadeAll(0.5, 4, false);
+	dispPtr->setPixVal(count%16, hsv2rgb(hue), false);
+	hue.h = (count*2 + 180)%360;
+	dispPtr->setPixVal((count+8)%16, hsv2rgb(hue));
+	// mySpiDisplay.setPixVal((cnt+8)%16, hsv2rgb(hue));
+}
+
+void mode1_step(ws2812B_SPI *dispPtr, int count)
+{
+	count /= 2;
+	hsv_dbl_t hue;
+	hue.s = 1;
+	hue.v = 1;
+
+	dispPtr->fadeAll(0.7, 8, false);
+	hue.h = (count*5)%360;
+	dispPtr->setPixVal(count%16, hsv2rgb(hue), false);
+	hue.h = (count*5 + 90)%360;
+	dispPtr->setPixVal((count+4)%16, hsv2rgb(hue), false);
+	hue.h = (count*5 + 180)%360;
+	dispPtr->setPixVal((count+8)%16, hsv2rgb(hue), false);
+	hue.h = (count*5 + 270)%360;
+	dispPtr->setPixVal((count+12)%16, hsv2rgb(hue));
+	// mySpiDisplay.setPixVal((cnt+8)%16, hsv2rgb(hue));
+}
+
+void mode2_step(ws2812B_SPI *dispPtr, int count)
+{
+	hsv_dbl_t hue;
+	hue.s = 1;
+	hue.v = 1;
+	hue.h = rand()%360;
+	// std::cout << hue.h << std::endl;
+	dispPtr->fadeAll(0.8, 8, false);
+	if(rand()%100 < 10)  dispPtr->setPixVal(rand()%16, hsv2rgb(hue));
+	else                		dispPtr->refresh();
+
+}
